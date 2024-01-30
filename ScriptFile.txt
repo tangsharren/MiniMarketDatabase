@@ -1,0 +1,1102 @@
+ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/YYYY';
+SET LINESIZE 120;
+SET PAGESIZE 120;
+--DROP from bridge to child to parent table
+DROP TABLE OrderDetails;
+DROP TABLE Supply;
+DROP TABLE ShiftAllocation;
+DROP TABLE Supplier;
+DROP TABLE Orders;
+DROP TABLE Staff;
+DROP TABLE Member;
+DROP TABLE Customer;
+DROP TABLE Product;
+DROP TABLE Branch;
+
+--Create from parent table
+CREATE TABLE Supplier (
+	SupplierID 		VARCHAR(5)		NOT NULL,
+	SupplierName 	VARCHAR(30),
+	SupplierPhone 	VARCHAR(17),
+	SupplierEmail 	VARCHAR(30),
+	PRIMARY KEY (SupplierID),
+	CONSTRAINT chk_email_address CHECK (REGEXP_LIKE(SupplierEmail,'^[a-zA-Z]\w+@(\S+)'))
+);
+CREATE TABLE Branch (
+	BranchID 		VARCHAR(5)		NOT NULL,
+	BranchName 		VARCHAR(30),
+	BranchEmail		VARCHAR(30),
+	BranchState 	VARCHAR(17) DEFAULT 'Selangor',
+	BranchAddress 	VARCHAR(30),
+	PRIMARY KEY (BranchID),
+	CONSTRAINT chk_branchemail CHECK (REGEXP_LIKE(BranchEmail,'^[a-zA-Z]\w+@(\S+)'))
+);
+CREATE TABLE Product (
+	ProductID 		VARCHAR(5)		NOT NULL,
+	ProductName 	VARCHAR(30),
+	UnitPrice		NUMBER(4,2),
+	QtyInStock        NUMBER(5),
+  	ProductCategory	VARCHAR(25),
+	PRIMARY KEY (ProductID)
+);
+
+CREATE TABLE Customer (
+	CustID 	VARCHAR(5)		NOT NULL,
+	CustName 	VARCHAR(30),
+	CustGender	CHAR(1)		DEFAULT 'M',
+	CustDOB 	DATE,
+	CustPhone 	VARCHAR(20),
+	CustEmail 	VARCHAR(30),
+	PRIMARY KEY (CustID),
+	CONSTRAINT chk_custgender CHECK (UPPER(CustGender) IN ('M','F')),
+	CONSTRAINT chk_custemail CHECK (REGEXP_LIKE(CustEmail,'^[a-zA-Z]\w+@(\S+)'))
+);
+CREATE TABLE Member(
+	MemberID 	      VARCHAR(5)		NOT NULL,
+	PointsCollected 	NUMBER(6)	DEFAULT 500,
+	ExpiryDate        DATE,
+	CustID 	      VARCHAR(5)		NOT NULL,
+	PRIMARY KEY (MemberID),
+	FOREIGN KEY (CustID) REFERENCES Customer (CustID)
+);
+CREATE TABLE Staff (
+	StaffID 		VARCHAR(5)		NOT NULL,
+	Name 			VARCHAR(20),
+	Gender 		CHAR(1)		DEFAULT 'M',
+	StaffDOB 		DATE,
+	Phone 		VARCHAR(17),
+	StaffRole 		VARCHAR(30)		DEFAULT 'Cleaning Team',
+	Salary		NUMBER(7,2)		DEFAULT 2000,
+	Address		VARCHAR(26),
+	RegDate 		DATE,
+	ExperienceInYear 	NUMBER(1),
+      Department		VARCHAR(26),
+	BranchID 		VARCHAR(5),
+	PRIMARY KEY (StaffID),
+	FOREIGN KEY (BranchID) REFERENCES Branch (BranchID),
+	CONSTRAINT chk_staff_staffsex CHECK (UPPER(Gender) IN ('M','F'))
+);
+CREATE TABLE Orders (
+	OrderID 	VARCHAR(5)	NOT NULL,
+	OrderDate 	DATE		NOT NULL,
+	OrderTime      CHAR(8),
+	Grandtotal  NUMBER(7,2),
+	CustID 	VARCHAR(4)	NOT NULL,
+	StaffID 	VARCHAR(5)	NOT NULL,
+	PRIMARY KEY (OrderID),
+	FOREIGN KEY (CustID) REFERENCES Customer (CustID),
+	FOREIGN KEY (StaffID) REFERENCES Staff (StaffID)
+);
+
+
+
+CREATE TABLE ShiftAllocation (
+	StaffID 	VARCHAR(5)		NOT NULL,
+	ShiftID 	VARCHAR(6)		NOT NULL,
+	DutyDate 	DATE,
+	StartTime 	CHAR(8),
+	EndTime	CHAR(8),
+	PRIMARY KEY (StaffID,ShiftID,DutyDate),
+	FOREIGN KEY (StaffID) REFERENCES Staff (StaffID)
+);
+CREATE TABLE Supply (
+	SupplyDate 	DATE              NOT NULL,
+	SupplyQty 	NUMBER(5),
+	SupplyPrice NUMBER(7,2),
+	ProductID 	VARCHAR(4)		NOT NULL,
+	SupplierID 	VARCHAR(4)		NOT NULL,
+	BranchID 	VARCHAR(4)		NOT NULL,
+    StaffID		VARCHAR(5)		NOT NULL,
+	PRIMARY KEY (SupplyDate,ProductID,SupplierID),
+	FOREIGN KEY (ProductID) REFERENCES Product (ProductID),
+	FOREIGN KEY (SupplierID) REFERENCES Supplier (SupplierID),
+	FOREIGN KEY (BranchID) REFERENCES Branch (BranchID),
+	FOREIGN KEY (StaffID) REFERENCES Staff (StaffID)
+);
+
+CREATE TABLE OrderDetails (
+	OrderID 		VARCHAR(5)	NOT NULL,
+	ProductID 		VARCHAR(5)	NOT NULL,
+	Qty			NUMBER(4),
+	SellingPrice 	NUMBER(5,2),
+	Subtotal		NUMBER(7,2),
+	PRIMARY KEY (OrderID,ProductID),
+	FOREIGN KEY (OrderID) REFERENCES Orders (OrderID),
+	FOREIGN KEY (ProductID) REFERENCES Product (ProductID)
+);
+
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP1', 'Dabjam', '+66 430 220 5167', 'ddick0@paginegialle.it');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP2', 'Roodel', '+52 920 429 4843', 'lgrewcock1@youku.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP3', 'Rhyloo', '+420 615 912 0431', 'ndonne2@yellowbook.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP4', 'Zazio', '+212 764 211 8768', 'dwatkins3@walmart.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP5', 'Ailane', '+254 205 788 7967', 'ctremathack4@histats.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP6', 'Buzzshare', '+33 468 612 8578', 'mgrinaway5@list-manage.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP7', 'Izio', '+689 728 498 0561', 'csaltmarsh6@smugmug.com');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP8', 'Rhycero', '+62 429 399 7774', 'uclawley7@nyu.edu');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP9', 'Camido', '+27 977 384 0173', 'rlyford8@people.com.cn');
+insert into Supplier (SupplierID , SupplierName, SupplierPhone, SupplierEmail ) values ('SP10', 'Photofeed', '+62 429 569 4886', 'ioglessane9@army.mil');
+
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B1', 'Serdang Raya', 'eatyea0@ucla.edu', 'Selangor', '7146 Westridge Alley');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B2', 'Danau Kota', 'sbritcher1@constantcontact.com', 'Kuala Lumpur', '31 Melrose Court');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B3', 'Taming Jaya', 'gdanelut2@patch.com', 'Selangor', '237 Menomonie Hill');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B4', 'Pavilion', 'fbradberry3@ftc.gov', 'Selangor', '58 Buena Vista Lane');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B5', 'Lalaport', 'rtommis4@yahoo.com', 'Kuala Lumpur', '22645 Scoville Park');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B6', 'Amerin Mall', 'hgudeman5@ucoz.com', 'Selangor', '75 Russell Junction');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B7', 'Palm Mall', 'cbucklee6@goo.ne.jp', 'Seremban', '1794 Fulton Way');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B8', 'East Coast', 'rgoude7@google.co.jp', 'Pahang', '418 Jay Road');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B9', 'Tali Air', 'alevensky8@eepurl.com', 'Pahang', '8 Shelley Terrace');
+insert into Branch (BranchID, BranchName, BranchEmail, BranchState, BranchAddress) values ('B10', 'Puncak Jalil', 'tdruel9@sphinn.com', 'Selangor', '283 Luster Point');
+
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P1', 'Chinese Lemon Pork', 9.66, 1000, 'Dried Food');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P2', 'Garlic - Primerba, Paste', 17.63, 3600, 'Fruits');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P3', 'Bag Stand', 6.14, 850, 'Cooking Condiments');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P4', 'Wasabi Paste', 17.49, 820, 'Vegetable');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P5', 'Coffee - Decaffeinato Coffee', 19.33, 580, 'Fresh Produce');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P6', 'Oats Large Flake', 10.13, 280, 'Fresh Produce');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P7', 'Syrup - Pancake', 15.26, 1400, 'Vegetable');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P8', 'Chocolate Bar - Smarties', 18.10, 330, 'Vegetable');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P9', 'Lemon Balm - Fresh', 3.78, 650, 'Cooking Condiments');
+insert into Product (ProductID, ProductName, UnitPrice, QtyInStock, ProductCategory) values ('P10', 'Vinegar - Raspberry', 14.66, 940, 'Fruits');
+
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU1', 'Ridger', 'F', '03/08/1993', '+33 723 965 4213', 'kridger0@webs.com');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU2', 'Vedekhov', 'M', '12/12/1997', '+351 712 530 8685', 'vvedekhov1@aol.com');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU3', 'Kuhnwald', 'M', '24/07/1994', '+30 844 248 3023', 'kkuhnwald2@cloudflare.com');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU4', 'Sides', 'F', '25/03/2003', '+63 925 450 9688', 'jsides3@ow.ly');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU5', 'Madders', 'M', '16/02/1994', '+86 142 857 6290', 'zmadders4@unesco.org');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU6', 'Hoyes', 'F', '08/07/1988', '+503 895 232 9437', 'khoyes5@sbwire.com');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU7', 'Tuffell', 'F', '23/02/2000', '+62 870 315 8602', 'ntuffell6@yandex.ru');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU8', 'Ruos', 'F', '16/01/1995', '+261 259 258 8819', 'lruos7@t.co');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU9', 'Beeton', 'F', '17/04/1986', '+7 764 770 2214', 'rbeeton8@gmpg.org');
+insert into Customer (CustID, CustName, CustGender, CustDOB, CustPhone, CustEmail) values ('CU10', 'Anthoine', 'F', '13/04/1998', '+82 893 871 9813', 'santhoine9@thetimes.co.uk');
+
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M1', 6682, '27/01/2024', 'CU3');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M2', 2497, '13/06/2023', 'CU1');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M3', 8402, '04/12/2023', 'CU7');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M4', 8546, '27/10/2023', 'CU5');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M5', 6548, '30/05/2023', 'CU6');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M6', 4903, '09/09/2023', 'CU9');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M7', 5183, '08/06/2023', 'CU4');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M8', 3191, '14/04/2024', 'CU10');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M9', 3991, '26/07/2023', 'CU2');
+insert into Member (MemberID, PointsCollected, ExpiryDate, CustID) values ('M10', 9145, '15/02/2024', 'CU8');
+
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST1', 'Web Seys', 'F', '21/02/2022', '+63 804 335 5222', 'Stock clerks', 3748, '165 Magdeline Drive', '28/04/2018', 8, 'Accounting and Finance', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST2', 'Ferdinand Sturt', 'F', '20/04/2022', '+1 321 553 2269', 'Product Buyer', 4372, '0476 Southridge Court', '26/08/2015', 5, 'Human Resources', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST3', 'Ebeneser Janus', 'F', '21/10/2022', '+1 763 710 4612', 'Department Manager', 3622, '5429 Merchant Junction', '20/06/2019', 3, 'Marketing', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST4', 'Ty Borzone', 'M', '16/01/2022', '+86 616 201 9725', 'Stock clerks', 4529, '66500 Buell Court', '15/11/2017', 8, 'Human Resources', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST5', 'Cordell Kos', 'M', '11/12/2021', '+7 672 663 2279', 'Wine experts', 4434, '5990 Mitchell Way', '01/02/2016', 4, 'Production', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST6', 'Mathilda Marzella', 'M', '27/12/2021', '+63 321 565 1915', 'Shipping and receiving clerks', 2350, '02227 Loomis Court', '28/12/2020', 8, 'Human Resources', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST7', 'Brett Twycross', 'F', '18/02/2022', '+62 196 380 1622', 'Baggers', 2843, '6151 Bobwhite Street', '22/11/2021', 8, 'Marketing', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST8', 'Trude Hinzer', 'F', '15/01/2022', '+261 540 130 4088', 'Store manager', 2214, '6665 Holy Cross Trail', '04/09/2018', 4, 'Accounting and Finance', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST9', 'Ethe Heavy', 'F', '06/06/2022', '+967 713 893 0859', 'Wine experts', 4031, '948 Kipling Hill', '05/07/2021', 3, 'Marketing', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST10', 'Fidelia Jovis', 'F', '23/11/2022', '+420 588 554 4608', 'Meat cutters', 4688, '308 Dayton Parkway', '01/02/2020', 5, 'Research and Development', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST11', 'Drew Pawelec', 'F', '18/09/2022', '+58 523 916 4051', 'Baggers', 4455, '2808 Melody Plaza', '05/06/2019', 5, 'Production', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST12', 'Phineas Veel', 'M', '19/09/2022', '+54 668 954 9945', 'Department Manager', 2214, '03 Memorial Trail', '24/12/2017', 5, 'Accounting and Finance', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST13', 'Devin Hunnywell', 'M', '22/06/2022', '+63 724 315 9271', 'Meat cutters', 2883, '0 Tony Circle', '06/12/2022', 5, 'IT', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST14', 'Vic Rayner', 'F', '18/02/2022', '+98 698 292 7316', 'Store manager', 2471, '46 Eagle Crest Lane', '03/01/2022', 4, 'Human Resources', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST15', 'Cory Kesley', 'F', '26/05/2022', '+7 828 972 2639', 'Baggers', 2833, '215 Clarendon Hill', '05/02/2020', 4, 'Research and Development', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST16', 'Rutledge Malatalant', 'M', '02/01/2022', '+33 748 632 1950', 'Shipping and receiving clerks', 4937, '8882 Buena Vista Hill', '23/12/2016', 6, 'Human Resources', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST17', 'Kikelia MacSween', 'M', '13/09/2022', '+66 562 454 7541', 'Product Buyer', 2188, '21905 Mcguire Place', '23/12/2019', 1, 'Research and Development', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST18', 'Cortney Schenfisch', 'M', '06/01/2022', '+385 285 235 4835', 'Shipping and receiving clerks', 3851, '7 Clove Court', '19/11/2022', 8, 'Marketing', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST19', 'Patience Regenhardt', 'M', '08/04/2022', '+62 569 758 6930', 'Cashiers', 3519, '9 Truax Way', '11/08/2018', 4, 'IT', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST20', 'Maryellen Turtle', 'M', '21/12/2021', '+351 913 794 5533', 'Product Buyer', 2908, '83339 Petterle Drive', '21/09/2021', 4, 'IT', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST21', 'Timmi Filchakov', 'F', '09/06/2022', '+86 297 469 5744', 'Shipping and receiving clerks', 4989, '14505 Morrow Plaza', '17/02/2020', 7, 'Research and Development', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST22', 'Sella Ponder', 'M', '01/03/2022', '+86 194 965 1276', 'Stock clerks', 3517, '13290 Heath Crossing', '12/12/2018', 6, 'Production', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST23', 'Danita Benne', 'M', '14/11/2022', '+351 146 702 4889', 'Shipping and receiving clerks', 2759, '48 Marquette Center', '17/07/2018', 8, 'IT', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST24', 'Orion Budcock', 'M', '05/02/2022', '+251 392 474 0257', 'Wine experts', 2952, '68474 Eliot Pass', '16/08/2015', 3, 'Human Resources', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST25', 'Vanya Kippins', 'M', '17/07/2022', '+86 927 238 1945', 'Wine experts', 4317, '3334 Bluestem Center', '17/06/2020', 6, 'Human Resources', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST26', 'Massimo Godridge', 'M', '06/09/2022', '+86 268 822 4660', 'Baggers', 3501, '31736 Kim Crossing', '11/11/2018', 3, 'IT', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST27', 'Brittni Heald', 'M', '07/09/2022', '+92 637 984 2873', 'Meat cutters', 4094, '539 Hermina Circle', '16/02/2020', 6, 'Human Resources', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST28', 'Lydon Hargerie', 'F', '21/06/2022', '+62 612 859 5261', 'Baggers', 2774, '38 Erie Terrace', '16/11/2015', 6, 'Accounting and Finance', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST29', 'Kennie Fiddian', 'M', '01/01/2022', '+62 962 176 1313', 'Product Buyer', 3917, '76892 Rigney Park', '14/07/2022', 1, 'IT', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST30', 'Tallia Fouracre', 'M', '25/02/2022', '+84 399 390 3785', 'Wine experts', 4599, '182 Cordelia Pass', '05/09/2021', 2, 'Human Resources', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST31', 'Kliment O''Dunneen', 'M', '06/07/2022', '+46 486 660 7344', 'Department Manager', 4137, '83370 Porter Trail', '18/08/2017', 3, 'Marketing', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST32', 'Blanch Cottam', 'F', '20/10/2022', '+86 259 368 4471', 'Product Buyer', 4262, '7218 Fair Oaks Crossing', '04/04/2017', 2, 'Research and Development', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST33', 'Dyanne Waldron', 'M', '02/09/2022', '+86 284 904 7692', 'Wine experts', 2215, '83636 Sommers Place', '05/03/2019', 4, 'Production', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST34', 'Yuma Meharry', 'F', '08/05/2022', '+255 164 992 0171', 'Stock clerks', 2125, '2708 Armistice Road', '25/06/2018', 7, 'Marketing', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST35', 'Silvana Cornewall', 'M', '13/11/2022', '+48 126 589 4841', 'Meat cutters', 2117, '20 Talisman Crossing', '06/02/2016', 8, 'Marketing', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST36', 'Onida Sneath', 'F', '08/04/2022', '+86 867 511 3495', 'Wine experts', 2524, '2653 International Road', '12/04/2021', 3, 'Accounting and Finance', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST37', 'Calvin Duval', 'M', '29/01/2022', '+880 256 967 0940', 'Stock clerks', 3730, '7878 Tennessee Point', '04/11/2020', 4, 'Marketing', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST38', 'Judye Herkess', 'M', '16/04/2022', '+63 661 807 1023', 'Shipping and receiving clerks', 3975, '7176 Erie Crossing', '14/01/2017', 6, 'Production', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST39', 'Kattie Arent', 'F', '29/01/2022', '+7 538 887 7622', 'Stock clerks', 4500, '39 Crowley Trail', '29/01/2015', 3, 'Accounting and Finance', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST40', 'Ernesto Pattemore', 'M', '24/05/2022', '+66 975 658 1008', 'Wine experts', 3272, '6 Sutherland Road', '26/02/2015', 8, 'Human Resources', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST41', 'Thedric Bergeon', 'M', '05/10/2022', '+971 525 304 8321', 'Shipping and receiving clerks', 3498, '0 Twin Pines Park', '09/05/2021', 7, 'Accounting and Finance', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST42', 'Bernardine Bhar', 'F', '03/05/2022', '+359 734 734 5229', 'Store manager', 4968, '2708 Maple Wood Parkway', '12/11/2018', 1, 'Accounting and Finance', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST43', 'Henrieta Sallery', 'F', '02/09/2022', '+60 937 903 8918', 'Meat cutters', 2513, '4337 Petterle Terrace', '01/12/2020', 2, 'IT', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST44', 'Janaye Ortet', 'M', '09/08/2022', '+7 286 333 2313', 'Store manager', 3712, '9810 Steensland Parkway', '13/06/2017', 2, 'Marketing', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST45', 'Angelique Cavanagh', 'F', '04/11/2022', '+351 600 260 8858', 'Stock clerks', 3424, '4888 Michigan Center', '01/08/2020', 1, 'Accounting and Finance', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST46', 'Emalee Whysall', 'M', '22/09/2022', '+1 970 432 7861', 'Product Buyer', 2872, '48126 Grover Junction', '23/05/2021', 7, 'Production', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST47', 'Marti Cowill', 'M', '24/05/2022', '+57 734 874 3084', 'Store manager', 2910, '547 Westend Park', '30/10/2019', 7, 'Marketing', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST48', 'Lisette Deddum', 'F', '13/07/2022', '+86 741 132 2241', 'Shipping and receiving clerks', 4033, '98280 Beilfuss Center', '26/07/2018', 6, 'Research and Development', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST49', 'Selinda Poulsen', 'M', '06/12/2022', '+234 807 259 4906', 'Shipping and receiving clerks', 3776, '28602 Fairfield Terrace', '07/04/2020', 4, 'Research and Development', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST50', 'Feodora Meysham', 'M', '01/02/2022', '+1 225 529 2765', 'Department Manager', 4083, '95 Eagan Lane', '15/11/2018', 2, 'IT', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST51', 'Forrest Wildber', 'M', '14/04/2022', '+351 905 490 6560', 'Baggers', 2872, '057 Alpine Point', '09/12/2018', 1, 'Marketing', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST52', 'Dynah McElrath', 'M', '13/04/2022', '+7 220 779 1905', 'Store manager', 4080, '27 Lakewood Center', '14/10/2018', 6, 'Human Resources', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST53', 'Farley Ruckman', 'F', '07/06/2022', '+855 210 176 0743', 'Department Manager', 2288, '5 Schurz Parkway', '27/08/2020', 4, 'Human Resources', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST54', 'Remington Cornbill', 'F', '29/07/2022', '+30 234 687 0465', 'Cashiers', 3421, '4694 Carey Hill', '01/04/2022', 3, 'IT', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST55', 'Fae Loverock', 'M', '04/10/2022', '+234 325 389 6624', 'Stock clerks', 4815, '171 Spohn Alley', '26/04/2018', 1, 'Accounting and Finance', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST56', 'Joycelin Margram', 'F', '22/09/2022', '+386 147 551 1868', 'Shipping and receiving clerks', 2123, '80120 International Avenue', '28/11/2019', 6, 'Research and Development', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST57', 'Kara Jollands', 'M', '29/08/2022', '+351 603 616 1451', 'Baggers', 2714, '9 Lyons Park', '02/07/2017', 8, 'Production', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST58', 'Cinnamon MattiCCI', 'M', '06/03/2022', '+45 647 387 2612', 'Store manager', 4555, '534 Namekagon Crossing', '12/11/2020', 5, 'Accounting and Finance', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST59', 'Ludovika Poynser', 'M', '15/06/2022', '+93 433 137 0495', 'Department Manager', 3087, '238 Roxbury Parkway', '22/08/2022', 3, 'Human Resources', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST60', 'Blithe Tutchings', 'M', '10/10/2022', '+420 526 710 8184', 'Stock clerks', 3513, '15 Vermont Avenue', '13/01/2017', 8, 'Production', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST61', 'Rutter Jagielski', 'M', '31/12/2021', '+54 923 861 5426', 'Department Manager', 2407, '31515 Coolidge Parkway', '01/08/2015', 3, 'Human Resources', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST62', 'Sarah Baleine', 'M', '16/09/2022', '+63 998 568 1726', 'Department Manager', 3440, '2660 Reinke Crossing', '28/11/2019', 2, 'Production', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST63', 'Skyler Whyman', 'M', '17/01/2022', '+52 458 733 1665', 'Baggers', 2890, '131 Jackson Center', '07/12/2018', 2, 'Accounting and Finance', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST64', 'Blinni Boath', 'M', '02/05/2022', '+972 466 834 9114', 'Stock clerks', 3526, '1 Pennsylvania Hill', '18/11/2017', 1, 'Accounting and Finance', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST65', 'Gerry Beushaw', 'F', '16/10/2022', '+62 843 546 5480', 'Product Buyer', 4378, '5311 Westridge Circle', '23/09/2020', 5, 'Marketing', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST66', 'Rasla Helleckas', 'M', '27/06/2022', '+33 456 535 9657', 'Stock clerks', 2454, '4536 Green Ridge Point', '08/06/2021', 8, 'Marketing', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST67', 'Saunderson Gregolin', 'F', '10/03/2022', '+44 773 578 8475', 'Department Manager', 3693, '64 Sheridan Court', '03/03/2016', 1, 'Accounting and Finance', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST68', 'Cleveland Philip', 'F', '20/05/2022', '+1 279 917 2391', 'Wine experts', 4461, '19946 Briar Crest Way', '15/10/2017', 1, 'Marketing', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST69', 'Simone Eayres', 'F', '14/04/2022', '+420 747 714 4806', 'Baggers', 3149, '060 Pine View Park', '15/09/2019', 1, 'Accounting and Finance', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST70', 'Reamonn McPartling', 'M', '30/07/2022', '+81 831 560 8704', 'Cashiers', 3262, '9 Messerschmidt Trail', '23/12/2018', 5, 'IT', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST71', 'Samuel Barchrameev', 'M', '22/11/2022', '+62 822 351 6439', 'Stock clerks', 3567, '76 American Ash Terrace', '19/05/2021', 3, 'Research and Development', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST72', 'Galen Carnew', 'M', '30/08/2022', '+33 240 750 0365', 'Department Manager', 2590, '54 Melrose Parkway', '19/08/2018', 2, 'Human Resources', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST73', 'Ced Filipponi', 'F', '01/04/2022', '+62 841 914 5573', 'Product Buyer', 2173, '9979 Susan Way', '19/07/2016', 8, 'Accounting and Finance', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST74', 'Peta Meineck', 'F', '29/06/2022', '+355 742 543 4470', 'Wine experts', 3768, '80 Fisk Circle', '29/08/2020', 2, 'Human Resources', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST75', 'Aldwin Crofthwaite', 'M', '12/06/2022', '+212 942 880 3426', 'Meat cutters', 4437, '81 Arrowood Road', '09/09/2017', 1, 'Human Resources', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST76', 'Fenelia Klosterman', 'M', '10/02/2022', '+353 642 294 6498', 'Department Manager', 2929, '99 School Terrace', '17/03/2017', 7, 'Accounting and Finance', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST77', 'Donavon Semmens', 'F', '25/08/2022', '+52 438 421 9837', 'Stock clerks', 3039, '95 Troy Hill', '19/11/2021', 8, 'Accounting and Finance', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST78', 'Dyanna Spearett', 'M', '23/05/2022', '+60 713 738 5821', 'Baggers', 3260, '24 Crest Line Court', '04/10/2020', 1, 'Marketing', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST79', 'Rudiger Grimshaw', 'F', '13/04/2022', '+86 426 656 0742', 'Baggers', 4817, '0 Continental Plaza', '22/01/2017', 5, 'Production', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST80', 'Wyn Chason', 'F', '01/08/2022', '+46 408 682 6641', 'Baggers', 4726, '42246 Hovde Parkway', '13/01/2022', 6, 'Production', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST81', 'Leesa Krolman', 'F', '10/07/2022', '+48 164 399 1585', 'Cashiers', 3587, '42 Buell Plaza', '05/09/2016', 5, 'Research and Development', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST82', 'Micky McCosh', 'M', '08/02/2022', '+33 505 427 2187', 'Meat cutters', 4846, '4 Granby Center', '25/09/2019', 1, 'Human Resources', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST83', 'Serge Cota', 'F', '17/10/2022', '+54 850 431 5640', 'Shipping and receiving clerks', 2911, '5 Anzinger Hill', '25/05/2015', 4, 'Production', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST84', 'Gwenora Penhallurick', 'M', '30/11/2022', '+7 894 478 1553', 'Product Buyer', 4894, '8485 Buell Parkway', '24/06/2019', 4, 'IT', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST85', 'Esmaria Philott', 'M', '02/08/2022', '+33 908 854 4076', 'Baggers', 2662, '0 Nova Plaza', '05/01/2016', 2, 'Research and Development', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST86', 'Malia Neylon', 'F', '09/02/2022', '+48 177 151 6063', 'Wine experts', 2928, '6209 La Follette Drive', '26/05/2016', 3, 'Research and Development', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST87', 'Wadsworth Fontell', 'M', '09/11/2022', '+62 533 413 3986', 'Stock clerks', 2885, '4 Emmet Street', '04/10/2016', 3, 'Production', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST88', 'Braden Poulsom', 'F', '29/05/2022', '+55 508 879 9216', 'Stock clerks', 2071, '9 Lindbergh Lane', '17/04/2020', 6, 'Accounting and Finance', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST89', 'Rozella Hallede', 'F', '30/07/2022', '+62 187 808 6162', 'Product Buyer', 4825, '78 Old Shore Road', '13/05/2017', 5, 'Production', 'B3');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST90', 'Trescha Hicken', 'M', '28/06/2022', '+66 161 466 1064', 'Product Buyer', 4916, '5008 Grim Place', '11/01/2016', 1, 'Accounting and Finance', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST91', 'Tymothy Adamovicz', 'M', '15/02/2022', '+53 228 540 0058', 'Baggers', 2672, '0591 Bashford Lane', '03/10/2018', 7, 'Accounting and Finance', 'B9');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST92', 'Simona Kee', 'M', '21/07/2022', '+355 370 628 9346', 'Department Manager', 4330, '8293 Onsgard Plaza', '06/11/2022', 3, 'Production', 'B10');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST93', 'Orin Stokes', 'F', '13/07/2022', '+63 329 558 9799', 'Product Buyer', 3518, '8 Myrtle Junction', '09/07/2018', 4, 'Production', 'B8');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST94', 'Gill Kivelle', 'M', '24/10/2022', '+55 109 535 4208', 'Stock clerks', 4525, '2 Browning Crossing', '13/11/2021', 5, 'Production', 'B1');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST95', 'Inez Pyson', 'F', '22/10/2022', '+62 598 740 5442', 'Meat cutters', 2861, '3 Bay Lane', '25/05/2021', 6, 'Research and Development', 'B5');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST96', 'Myrwyn Bemlott', 'F', '05/07/2022', '+351 127 734 4914', 'Cashiers', 3874, '9676 Evergreen Court', '29/09/2017', 1, 'Marketing', 'B2');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST97', 'Essie Doniso', 'M', '26/08/2022', '+86 549 724 2677', 'Meat cutters', 2764, '49 Shoshone Court', '06/10/2016', 1, 'Accounting and Finance', 'B7');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST98', 'Verina Syde', 'M', '26/03/2022', '+420 213 778 4188', 'Store manager', 4723, '7711 Doe Crossing Park', '04/01/2019', 1, 'Human Resources', 'B6');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST99', 'Ailey Jonah', 'F', '03/02/2022', '+7 179 686 7429', 'Cashiers', 4932, '87533 Glacier Hill Circle', '07/08/2017', 5, 'Human Resources', 'B4');
+insert into Staff (StaffID, Name, Gender, StaffDOB, Phone, StaffRole, Salary, Address, RegDate, ExperienceInYear, Department, BranchID) values ('ST100', 'Aurelie Keay', 'M', '12/12/2021', '+63 190 356 8649', 'Store manager', 4059, '905 Goodland Lane', '19/07/2022', 1, 'Research and Development', 'B3');
+
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/10/2019', 637, 3408, 'P7', 'SP2', 'B8', 'ST15');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/12/2019', 401, 2519, 'P5', 'SP5', 'B7', 'ST64');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/11/2022', 300, 2640, 'P9', 'SP3', 'B10', 'ST6');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/02/2019', 393, 3183, 'P3', 'SP10', 'B1', 'ST44');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/07/2016', 389, 4705, 'P2', 'SP7', 'B5', 'ST63');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/10/2022', 534, 3603, 'P1', 'SP9', 'B3', 'ST60');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/08/2017', 543, 4198, 'P4', 'SP1', 'B6', 'ST50');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/06/2016', 367, 4673, 'P10', 'SP4', 'B9', 'ST70');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/05/2016', 456, 4631, 'P6', 'SP6', 'B4', 'ST100');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/03/2019', 623, 2405, 'P8', 'SP8', 'B2', 'ST30');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/12/2018', 539, 3850, 'P9', 'SP2', 'B9', 'ST68');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/08/2022', 490, 4306, 'P3', 'SP7', 'B2', 'ST94');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/08/2016', 382, 4918, 'P7', 'SP3', 'B7', 'ST71');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/12/2017', 341, 2435, 'P4', 'SP6', 'B5', 'ST97');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/10/2018', 488, 4283, 'P5', 'SP9', 'B8', 'ST39');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/05/2019', 575, 2428, 'P6', 'SP1', 'B6', 'ST52');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/06/2022', 681, 2578, 'P1', 'SP5', 'B10', 'ST29');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/06/2022', 470, 2473, 'P10', 'SP10', 'B1', 'ST62');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/07/2018', 450, 4484, 'P2', 'SP8', 'B4', 'ST13');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/10/2017', 502, 2457, 'P8', 'SP4', 'B3', 'ST92');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/05/2017', 316, 4582, 'P10', 'SP8', 'B10', 'ST25');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/07/2022', 577, 4863, 'P6', 'SP1', 'B1', 'ST83');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/01/2020', 639, 4565, 'P8', 'SP3', 'B3', 'ST69');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/06/2018', 499, 4787, 'P9', 'SP10', 'B9', 'ST33');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/03/2022', 512, 4498, 'P7', 'SP4', 'B5', 'ST77');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/09/2019', 547, 2586, 'P3', 'SP9', 'B2', 'ST95');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/11/2019', 545, 4797, 'P5', 'SP7', 'B8', 'ST40');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/06/2017', 456, 3528, 'P2', 'SP6', 'B4', 'ST4');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/04/2019', 409, 3004, 'P1', 'SP2', 'B6', 'ST41');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/04/2018', 398, 2794, 'P4', 'SP5', 'B7', 'ST72');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/09/2017', 507, 2350, 'P5', 'SP1', 'B9', 'ST46');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/09/2017', 617, 2818, 'P8', 'SP8', 'B7', 'ST56');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/11/2018', 506, 4386, 'P3', 'SP5', 'B4', 'ST88');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/02/2018', 398, 3365, 'P7', 'SP2', 'B1', 'ST34');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/03/2018', 510, 4801, 'P6', 'SP4', 'B6', 'ST19');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/05/2019', 366, 2503, 'P10', 'SP10', 'B5', 'ST37');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/02/2019', 596, 2196, 'P1', 'SP7', 'B8', 'ST58');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/03/2019', 663, 4350, 'P4', 'SP3', 'B3', 'ST78');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/07/2017', 456, 2503, 'P2', 'SP9', 'B2', 'ST75');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/01/2021', 580, 4279, 'P9', 'SP6', 'B10', 'ST99');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/03/2022', 554, 2585, 'P8', 'SP7', 'B1', 'ST57');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/03/2017', 687, 2145, 'P3', 'SP10', 'B9', 'ST82');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/07/2019', 491, 4846, 'P2', 'SP3', 'B8', 'ST65');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/05/2016', 592, 2422, 'P5', 'SP9', 'B2', 'ST87');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/08/2020', 325, 3375, 'P1', 'SP6', 'B4', 'ST81');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/11/2022', 319, 2237, 'P9', 'SP1', 'B3', 'ST26');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/04/2018', 439, 4799, 'P4', 'SP4', 'B5', 'ST35');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/12/2016', 549, 4134, 'P10', 'SP8', 'B7', 'ST3');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/05/2019', 407, 2128, 'P6', 'SP5', 'B6', 'ST98');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/05/2022', 571, 3104, 'P7', 'SP2', 'B10', 'ST86');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/01/2020', 656, 4050, 'P7', 'SP7', 'B3', 'ST2');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/08/2020', 450, 4563, 'P2', 'SP10', 'B4', 'ST55');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/01/2017', 589, 2035, 'P1', 'SP5', 'B8', 'ST36');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/09/2021', 669, 2850, 'P4', 'SP3', 'B1', 'ST91');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/08/2016', 588, 3322, 'P3', 'SP2', 'B6', 'ST67');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/01/2017', 559, 4739, 'P6', 'SP8', 'B9', 'ST9');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/08/2016', 667, 2741, 'P8', 'SP4', 'B10', 'ST51');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/09/2021', 623, 2795, 'P9', 'SP6', 'B5', 'ST47');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/10/2017', 673, 3891, 'P10', 'SP9', 'B2', 'ST96');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/05/2019', 324, 2204, 'P5', 'SP1', 'B7', 'ST10');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/08/2017', 413, 3685, 'P3', 'SP6', 'B7', 'ST32');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/12/2020', 459, 3770, 'P8', 'SP5', 'B9', 'ST17');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/08/2020', 527, 4438, 'P5', 'SP7', 'B8', 'ST85');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/03/2018', 411, 4817, 'P10', 'SP1', 'B4', 'ST21');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/11/2021', 391, 2063, 'P7', 'SP8', 'B3', 'ST1');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/10/2018', 692, 4416, 'P1', 'SP2', 'B10', 'ST42');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('28/02/2022', 489, 4689, 'P4', 'SP3', 'B5', 'ST45');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/10/2020', 309, 2231, 'P6', 'SP10', 'B6', 'ST76');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/01/2018', 620, 4403, 'P2', 'SP9', 'B2', 'ST89');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/12/2021', 465, 4002, 'P9', 'SP4', 'B1', 'ST43');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/12/2018', 483, 2336, 'P8', 'SP6', 'B10', 'ST53');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/01/2016', 548, 3829, 'P10', 'SP7', 'B3', 'ST49');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/05/2018', 418, 3845, 'P5', 'SP10', 'B7', 'ST66');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/02/2021', 346, 2216, 'P9', 'SP3', 'B8', 'ST8');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/04/2018', 353, 2427, 'P6', 'SP5', 'B1', 'ST80');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/05/2022', 627, 2329, 'P2', 'SP8', 'B5', 'ST61');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/03/2016', 373, 2134, 'P3', 'SP2', 'B4', 'ST5');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/11/2018', 356, 2087, 'P4', 'SP1', 'B2', 'ST28');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/03/2020', 448, 3910, 'P1', 'SP4', 'B6', 'ST48');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/09/2019', 345, 4372, 'P7', 'SP9', 'B9', 'ST14');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/06/2018', 626, 2110, 'P8', 'SP5', 'B7', 'ST11');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('28/10/2019', 562, 3630, 'P10', 'SP4', 'B3', 'ST38');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/07/2020', 456, 2449, 'P1', 'SP9', 'B8', 'ST73');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/02/2020', 498, 4739, 'P4', 'SP1', 'B4', 'ST24');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/05/2017', 469, 3654, 'P3', 'SP2', 'B10', 'ST79');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/08/2016', 464, 2982, 'P6', 'SP6', 'B5', 'ST22');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/04/2022', 310, 4189, 'P7', 'SP10', 'B2', 'ST59');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/09/2018', 616, 3960, 'P9', 'SP7', 'B1', 'ST20');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/06/2020', 322, 3243, 'P2', 'SP8', 'B9', 'ST31');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/09/2017', 501, 3092, 'P5', 'SP3', 'B6', 'ST74');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/11/2017', 493, 4361, 'P3', 'SP6', 'B10', 'ST84');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/03/2020', 572, 4619, 'P2', 'SP4', 'B4', 'ST27');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/06/2022', 544, 4886, 'P5', 'SP2', 'B7', 'ST12');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/12/2016', 639, 3383, 'P9', 'SP1', 'B8', 'ST90');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/10/2017', 627, 3135, 'P4', 'SP9', 'B2', 'ST16');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/10/2021', 500, 3638, 'P7', 'SP10', 'B5', 'ST7');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/02/2019', 380, 4307, 'P10', 'SP5', 'B1', 'ST23');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/03/2016', 544, 4162, 'P6', 'SP3', 'B9', 'ST18');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/05/2016', 325, 3261, 'P8', 'SP7', 'B6', 'ST93');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/12/2021', 330, 4214, 'P1', 'SP8', 'B3', 'ST54');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/10/2019', 428, 2689, 'P5', 'SP7', 'B7', 'ST47');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/12/2021', 611, 3184, 'P7', 'SP5', 'B2', 'ST65');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/05/2018', 435, 3986, 'P4', 'SP3', 'B9', 'ST75');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/11/2018', 584, 4972, 'P10', 'SP10', 'B10', 'ST40');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/10/2017', 313, 4816, 'P6', 'SP4', 'B5', 'ST76');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/05/2017', 423, 3256, 'P8', 'SP9', 'B6', 'ST26');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/02/2016', 342, 4395, 'P1', 'SP1', 'B1', 'ST42');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/03/2020', 545, 3519, 'P3', 'SP8', 'B4', 'ST68');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/11/2020', 635, 4840, 'P2', 'SP6', 'B8', 'ST48');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/02/2020', 318, 3798, 'P9', 'SP2', 'B3', 'ST4');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/04/2018', 390, 4505, 'P3', 'SP8', 'B5', 'ST89');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/11/2019', 658, 2586, 'P6', 'SP10', 'B3', 'ST8');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/02/2020', 349, 4909, 'P5', 'SP1', 'B7', 'ST84');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/11/2019', 617, 2617, 'P1', 'SP3', 'B6', 'ST97');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/08/2020', 585, 2712, 'P10', 'SP7', 'B9', 'ST74');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/06/2021', 512, 3266, 'P2', 'SP6', 'B2', 'ST72');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/05/2017', 485, 2769, 'P7', 'SP9', 'B10', 'ST46');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/02/2022', 477, 3992, 'P8', 'SP4', 'B4', 'ST67');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/06/2018', 424, 4838, 'P9', 'SP2', 'B8', 'ST96');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('28/04/2019', 306, 4209, 'P4', 'SP5', 'B1', 'ST87');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/08/2022', 594, 4820, 'P6', 'SP3', 'B4', 'ST58');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/05/2021', 650, 4498, 'P3', 'SP7', 'B6', 'ST99');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/09/2022', 325, 3880, 'P2', 'SP4', 'B1', 'ST15');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/06/2017', 544, 4660, 'P10', 'SP1', 'B3', 'ST24');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/02/2018', 309, 3647, 'P5', 'SP2', 'B2', 'ST7');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/07/2016', 469, 2403, 'P9', 'SP9', 'B8', 'ST22');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/01/2017', 357, 3395, 'P8', 'SP8', 'B5', 'ST53');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/05/2020', 467, 3529, 'P7', 'SP10', 'B10', 'ST20');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/08/2021', 464, 3592, 'P4', 'SP6', 'B7', 'ST50');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/12/2019', 475, 3649, 'P1', 'SP5', 'B9', 'ST1');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/01/2017', 578, 4794, 'P5', 'SP8', 'B3', 'ST34');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/08/2022', 596, 3543, 'P8', 'SP2', 'B9', 'ST94');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/06/2019', 654, 4563, 'P2', 'SP1', 'B10', 'ST62');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/12/2017', 687, 2013, 'P1', 'SP3', 'B5', 'ST71');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/08/2017', 475, 4169, 'P3', 'SP10', 'B6', 'ST98');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/02/2022', 687, 4978, 'P10', 'SP9', 'B2', 'ST90');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/08/2022', 633, 2793, 'P9', 'SP7', 'B8', 'ST25');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/05/2020', 501, 2074, 'P4', 'SP5', 'B4', 'ST95');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/01/2022', 431, 2291, 'P7', 'SP6', 'B7', 'ST9');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/12/2019', 510, 3272, 'P6', 'SP4', 'B1', 'ST77');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/09/2018', 656, 3434, 'P6', 'SP9', 'B9', 'ST13');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/07/2022', 400, 3261, 'P7', 'SP4', 'B7', 'ST79');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/04/2021', 354, 4751, 'P8', 'SP10', 'B4', 'ST86');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/11/2017', 674, 2432, 'P10', 'SP2', 'B8', 'ST10');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/01/2019', 697, 4510, 'P2', 'SP1', 'B3', 'ST55');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/02/2016', 316, 4570, 'P4', 'SP7', 'B5', 'ST73');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/09/2021', 543, 4905, 'P1', 'SP3', 'B2', 'ST60');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/03/2021', 345, 2251, 'P5', 'SP5', 'B6', 'ST39');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/12/2020', 332, 2520, 'P9', 'SP6', 'B10', 'ST59');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('05/04/2020', 371, 3066, 'P3', 'SP8', 'B1', 'ST32');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/06/2019', 311, 4292, 'P5', 'SP5', 'B6', 'ST12');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/05/2022', 399, 4082, 'P7', 'SP8', 'B8', 'ST27');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/08/2021', 444, 2861, 'P9', 'SP10', 'B10', 'ST54');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('25/12/2017', 492, 3438, 'P8', 'SP1', 'B3', 'ST23');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/05/2021', 587, 3434, 'P3', 'SP3', 'B4', 'ST45');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/05/2019', 652, 2811, 'P10', 'SP4', 'B5', 'ST85');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/04/2022', 556, 4896, 'P4', 'SP6', 'B1', 'ST30');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/07/2017', 393, 3240, 'P6', 'SP9', 'B9', 'ST36');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/09/2019', 356, 2597, 'P2', 'SP7', 'B7', 'ST57');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/01/2021', 432, 4349, 'P1', 'SP2', 'B2', 'ST100');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/09/2021', 304, 4534, 'P8', 'SP6', 'B4', 'ST41');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/01/2016', 569, 2217, 'P10', 'SP4', 'B3', 'ST35');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/05/2018', 377, 3297, 'P5', 'SP7', 'B5', 'ST5');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/06/2020', 629, 4413, 'P4', 'SP3', 'B8', 'ST64');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('05/11/2018', 536, 2725, 'P7', 'SP1', 'B6', 'ST91');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/05/2019', 645, 4859, 'P6', 'SP8', 'B9', 'ST16');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/11/2016', 467, 3375, 'P1', 'SP10', 'B7', 'ST83');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/03/2020', 531, 2586, 'P2', 'SP5', 'B2', 'ST56');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/04/2016', 417, 3482, 'P9', 'SP9', 'B1', 'ST18');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/02/2017', 439, 2648, 'P3', 'SP2', 'B10', 'ST61');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/07/2019', 570, 2676, 'P4', 'SP3', 'B7', 'ST52');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/09/2018', 681, 4010, 'P6', 'SP2', 'B1', 'ST31');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/08/2020', 659, 3811, 'P1', 'SP1', 'B9', 'ST51');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('10/06/2018', 408, 4992, 'P3', 'SP8', 'B4', 'ST19');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/10/2020', 472, 2284, 'P7', 'SP9', 'B5', 'ST14');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/04/2020', 331, 3592, 'P2', 'SP10', 'B3', 'ST80');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/08/2020', 593, 2767, 'P10', 'SP4', 'B2', 'ST63');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/11/2017', 325, 2936, 'P5', 'SP5', 'B10', 'ST29');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/12/2019', 543, 3454, 'P8', 'SP6', 'B8', 'ST93');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/03/2021', 371, 4814, 'P9', 'SP7', 'B6', 'ST92');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/09/2020', 635, 3230, 'P10', 'SP10', 'B4', 'ST78');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/11/2018', 305, 3117, 'P9', 'SP6', 'B1', 'ST49');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/09/2019', 489, 4519, 'P2', 'SP8', 'B9', 'ST2');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/09/2022', 459, 3286, 'P3', 'SP5', 'B8', 'ST37');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/01/2020', 543, 3549, 'P6', 'SP3', 'B3', 'ST3');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/10/2022', 440, 4651, 'P7', 'SP2', 'B7', 'ST43');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/05/2017', 552, 3192, 'P4', 'SP7', 'B2', 'ST82');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('27/10/2021', 639, 3128, 'P5', 'SP9', 'B6', 'ST28');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/03/2022', 522, 3019, 'P8', 'SP1', 'B10', 'ST44');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/10/2020', 520, 2849, 'P1', 'SP4', 'B5', 'ST81');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/01/2019', 374, 3712, 'P2', 'SP8', 'B4', 'ST88');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/04/2016', 654, 2079, 'P10', 'SP6', 'B8', 'ST38');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/02/2016', 430, 4297, 'P8', 'SP10', 'B5', 'ST11');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('06/05/2017', 344, 3000, 'P1', 'SP1', 'B9', 'ST21');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/07/2016', 382, 2526, 'P3', 'SP4', 'B6', 'ST70');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/12/2020', 685, 2268, 'P4', 'SP3', 'B2', 'ST66');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/01/2016', 308, 3676, 'P6', 'SP2', 'B3', 'ST6');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/04/2021', 419, 4993, 'P7', 'SP7', 'B10', 'ST69');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/09/2021', 366, 2114, 'P5', 'SP5', 'B7', 'ST33');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/09/2021', 330, 2253, 'P9', 'SP9', 'B1', 'ST17');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/06/2016', 612, 4466, 'P9', 'SP4', 'B9', 'ST58');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/10/2018', 455, 3455, 'P5', 'SP3', 'B10', 'ST50');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/05/2021', 389, 4423, 'P2', 'SP6', 'B4', 'ST8');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/02/2022', 482, 3632, 'P6', 'SP8', 'B8', 'ST11');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('30/11/2022', 363, 3946, 'P7', 'SP7', 'B1', 'ST99');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/12/2019', 441, 4125, 'P1', 'SP1', 'B3', 'ST87');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/03/2017', 356, 2529, 'P4', 'SP5', 'B6', 'ST56');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/08/2017', 478, 3629, 'P10', 'SP10', 'B5', 'ST10');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/10/2020', 597, 2406, 'P8', 'SP9', 'B7', 'ST31');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/09/2018', 520, 2260, 'P3', 'SP2', 'B2', 'ST72');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/09/2021', 669, 4685, 'P9', 'SP6', 'B2', 'ST27');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/12/2019', 346, 2436, 'P7', 'SP8', 'B4', 'ST51');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/07/2020', 693, 2501, 'P3', 'SP2', 'B8', 'ST100');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/09/2020', 465, 4523, 'P2', 'SP1', 'B5', 'ST88');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/01/2020', 332, 4554, 'P8', 'SP10', 'B6', 'ST35');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/11/2017', 329, 4475, 'P10', 'SP4', 'B3', 'ST39');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/01/2018', 658, 3688, 'P1', 'SP9', 'B1', 'ST75');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/04/2017', 592, 4706, 'P6', 'SP3', 'B7', 'ST65');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/03/2020', 393, 4995, 'P4', 'SP7', 'B10', 'ST55');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/11/2020', 474, 2929, 'P5', 'SP5', 'B9', 'ST85');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/03/2021', 450, 4982, 'P1', 'SP1', 'B5', 'ST74');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/01/2022', 515, 3547, 'P6', 'SP10', 'B4', 'ST38');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/04/2021', 494, 3908, 'P7', 'SP4', 'B6', 'ST34');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/02/2018', 477, 3871, 'P10', 'SP7', 'B1', 'ST24');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/05/2021', 678, 2415, 'P2', 'SP3', 'B2', 'ST77');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('28/12/2020', 643, 2274, 'P4', 'SP5', 'B8', 'ST63');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/12/2021', 454, 3685, 'P5', 'SP6', 'B3', 'ST71');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/11/2017', 406, 4628, 'P3', 'SP2', 'B9', 'ST19');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/01/2021', 430, 4471, 'P9', 'SP9', 'B7', 'ST2');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/11/2016', 477, 2231, 'P8', 'SP8', 'B10', 'ST13');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/11/2020', 438, 4319, 'P3', 'SP1', 'B6', 'ST20');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/06/2016', 542, 2583, 'P7', 'SP2', 'B9', 'ST7');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/11/2021', 623, 2272, 'P2', 'SP6', 'B10', 'ST25');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/08/2019', 676, 3495, 'P5', 'SP5', 'B2', 'ST92');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('05/05/2019', 661, 2046, 'P10', 'SP8', 'B8', 'ST37');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/01/2019', 372, 3235, 'P1', 'SP9', 'B5', 'ST12');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/05/2022', 416, 4409, 'P8', 'SP3', 'B3', 'ST91');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/05/2018', 666, 3641, 'P9', 'SP10', 'B4', 'ST9');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/02/2020', 491, 2124, 'P6', 'SP4', 'B1', 'ST17');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/06/2017', 572, 2382, 'P4', 'SP7', 'B7', 'ST23');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/04/2020', 361, 4503, 'P3', 'SP9', 'B9', 'ST14');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/10/2022', 421, 2219, 'P7', 'SP8', 'B2', 'ST60');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/12/2017', 620, 4180, 'P4', 'SP3', 'B10', 'ST67');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('23/10/2022', 665, 3203, 'P2', 'SP10', 'B7', 'ST3');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/09/2019', 548, 3698, 'P9', 'SP1', 'B6', 'ST4');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/06/2016', 587, 3082, 'P1', 'SP5', 'B5', 'ST44');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/05/2019', 623, 3482, 'P5', 'SP6', 'B4', 'ST68');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/12/2020', 390, 2330, 'P10', 'SP7', 'B1', 'ST43');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/04/2019', 635, 3712, 'P8', 'SP2', 'B8', 'ST40');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/12/2020', 358, 3580, 'P6', 'SP4', 'B3', 'ST15');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/09/2018', 473, 4788, 'P10', 'SP1', 'B3', 'ST48');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/03/2019', 665, 3395, 'P8', 'SP2', 'B4', 'ST95');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('28/07/2018', 497, 2258, 'P3', 'SP6', 'B1', 'ST98');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/04/2022', 523, 2860, 'P5', 'SP9', 'B6', 'ST1');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/11/2018', 500, 4865, 'P9', 'SP8', 'B5', 'ST21');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/06/2016', 473, 3443, 'P6', 'SP3', 'B7', 'ST18');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/07/2017', 527, 2106, 'P2', 'SP10', 'B8', 'ST33');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/02/2021', 423, 2900, 'P1', 'SP4', 'B2', 'ST54');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/02/2016', 613, 4808, 'P7', 'SP7', 'B9', 'ST45');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/01/2019', 379, 2928, 'P4', 'SP5', 'B10', 'ST78');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/11/2016', 688, 3238, 'P6', 'SP8', 'B2', 'ST79');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/12/2018', 314, 3040, 'P2', 'SP9', 'B10', 'ST30');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/06/2020', 424, 3705, 'P10', 'SP7', 'B8', 'ST42');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/11/2018', 636, 2465, 'P4', 'SP5', 'B1', 'ST81');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('01/05/2020', 425, 3679, 'P7', 'SP4', 'B7', 'ST29');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/06/2018', 453, 4731, 'P8', 'SP1', 'B5', 'ST16');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/01/2016', 652, 2378, 'P9', 'SP10', 'B3', 'ST66');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('20/12/2018', 679, 4423, 'P5', 'SP3', 'B4', 'ST26');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('21/11/2021', 512, 2941, 'P3', 'SP6', 'B9', 'ST93');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/05/2018', 493, 3351, 'P1', 'SP2', 'B6', 'ST57');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('07/09/2020', 477, 4240, 'P3', 'SP9', 'B8', 'ST32');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('15/07/2022', 643, 3919, 'P1', 'SP7', 'B1', 'ST53');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('17/04/2017', 491, 2731, 'P10', 'SP4', 'B10', 'ST22');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/10/2021', 466, 2542, 'P5', 'SP1', 'B4', 'ST84');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('29/08/2020', 579, 4142, 'P7', 'SP6', 'B7', 'ST36');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/05/2020', 607, 4385, 'P2', 'SP8', 'B2', 'ST69');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/08/2019', 338, 4493, 'P4', 'SP10', 'B6', 'ST47');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('12/04/2021', 500, 3481, 'P9', 'SP3', 'B5', 'ST73');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('31/10/2017', 591, 3714, 'P6', 'SP2', 'B9', 'ST89');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('04/08/2017', 310, 3197, 'P8', 'SP5', 'B3', 'ST83');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('02/01/2020', 622, 2536, 'P1', 'SP6', 'B1', 'ST94');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('11/03/2017', 544, 2382, 'P8', 'SP10', 'B6', 'ST97');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/06/2022', 490, 3919, 'P4', 'SP9', 'B4', 'ST96');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/02/2021', 626, 4868, 'P5', 'SP3', 'B8', 'ST46');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('24/09/2022', 520, 2320, 'P9', 'SP7', 'B9', 'ST5');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('05/01/2021', 667, 3903, 'P10', 'SP2', 'B3', 'ST61');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('16/08/2022', 696, 4229, 'P2', 'SP8', 'B2', 'ST59');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/10/2021', 327, 4183, 'P3', 'SP1', 'B10', 'ST80');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/12/2018', 621, 2623, 'P7', 'SP4', 'B7', 'ST64');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/08/2016', 373, 2914, 'P6', 'SP5', 'B5', 'ST6');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/07/2016', 377, 4942, 'P3', 'SP2', 'B4', 'ST76');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('18/02/2019', 547, 4702, 'P9', 'SP3', 'B1', 'ST70');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('13/12/2020', 662, 2398, 'P4', 'SP7', 'B3', 'ST52');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('08/07/2020', 314, 4356, 'P7', 'SP5', 'B2', 'ST28');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('19/09/2022', 625, 4715, 'P2', 'SP1', 'B10', 'ST90');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('14/08/2016', 428, 2866, 'P1', 'SP4', 'B8', 'ST62');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('09/11/2017', 321, 3245, 'P8', 'SP10', 'B9', 'ST49');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('03/07/2019', 684, 4075, 'P5', 'SP8', 'B6', 'ST41');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('26/11/2020', 623, 4997, 'P6', 'SP9', 'B5', 'ST82');
+insert into Supply (SupplyDate, SupplyQty, SupplyPrice, ProductID, SupplierID, BranchID, StaffID) values ('22/03/2016', 653, 3043, 'P10', 'SP6', 'B7', 'ST29');
+
+
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR1', '07/09/2017', '6:44 PM', 900, 'CU6', 'ST55');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR2', '16/05/2016', '10:23 AM', 35, 'CU10', 'ST2');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR3', '29/09/2015', '6:33 PM', 909, 'CU1', 'ST81');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR4', '09/03/2021', '2:31 PM', 431, 'CU7', 'ST6');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR5', '17/07/2019', '8:57 PM', 497, 'CU2', 'ST25');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR6', '28/07/2016', '2:59 PM', 681, 'CU8', 'ST42');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR7', '24/10/2015', '4:25 PM', 740, 'CU3', 'ST74');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR8', '21/04/2016', '10:52 AM', 220, 'CU4', 'ST29');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR9', '22/12/2017', '1:24 PM', 447, 'CU9', 'ST41');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR10', '09/03/2019', '12:34 PM', 976, 'CU5', 'ST51');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR11', '13/07/2019', '10:16 AM', 324, 'CU6', 'ST7');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR12', '01/07/2015', '11:24 AM', 31, 'CU4', 'ST15');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR13', '02/04/2020', '2:47 PM', 769, 'CU9', 'ST31');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR14', '15/06/2016', '5:45 PM', 632, 'CU8', 'ST60');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR15', '23/10/2020', '9:40 AM', 245, 'CU3', 'ST9');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR16', '21/09/2016', '7:29 PM', 118, 'CU7', 'ST33');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR17', '05/04/2020', '12:08 PM', 281, 'CU5', 'ST68');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR18', '25/07/2021', '1:19 PM', 958, 'CU1', 'ST32');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR19', '27/07/2021', '12:02 PM', 822, 'CU10', 'ST47');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR20', '19/03/2022', '9:29 AM', 758, 'CU2', 'ST28');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR21', '23/03/2022', '11:51 AM', 718, 'CU3', 'ST24');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR22', '05/05/2022', '3:43 PM', 144, 'CU8', 'ST73');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR23', '27/10/2016', '10:31 AM', 26, 'CU7', 'ST27');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR24', '20/05/2017', '1:33 PM', 155, 'CU1', 'ST77');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR25', '13/04/2015', '4:50 PM', 762, 'CU2', 'ST45');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR26', '16/07/2020', '5:47 PM', 891, 'CU9', 'ST17');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR27', '16/03/2019', '3:58 PM', 492, 'CU4', 'ST87');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR28', '11/02/2018', '5:27 PM', 477, 'CU5', 'ST96');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR29', '06/01/2022', '6:33 PM', 169, 'CU6', 'ST23');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR30', '07/10/2018', '2:06 PM', 693, 'CU10', 'ST5');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR31', '01/08/2022', '11:57 AM', 617, 'CU6', 'ST64');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR32', '30/04/2020', '4:45 PM', 566, 'CU3', 'ST26');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR33', '17/03/2017', '4:35 PM', 825, 'CU7', 'ST36');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR34', '04/07/2015', '12:07 PM', 846, 'CU5', 'ST63');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR35', '06/09/2018', '9:30 AM', 857, 'CU10', 'ST30');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR36', '30/05/2022', '10:51 AM', 987, 'CU8', 'ST54');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR37', '17/08/2019', '8:53 PM', 898, 'CU2', 'ST14');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR38', '04/02/2022', '6:36 PM', 790, 'CU1', 'ST69');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR39', '12/05/2022', '3:21 PM', 662, 'CU9', 'ST40');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR40', '18/04/2020', '9:34 AM', 674, 'CU4', 'ST92');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR41', '01/02/2017', '7:38 PM', 202, 'CU6', 'ST82');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR42', '08/11/2018', '10:12 AM', 342, 'CU7', 'ST62');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR43', '30/03/2016', '4:25 PM', 80, 'CU1', 'ST13');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR44', '29/03/2018', '2:10 PM', 106, 'CU2', 'ST99');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR45', '10/07/2015', '10:12 AM', 892, 'CU8', 'ST35');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR46', '16/10/2021', '9:27 AM', 395, 'CU4', 'ST67');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR47', '28/12/2019', '1:45 PM', 954, 'CU3', 'ST50');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR48', '22/01/2022', '8:13 PM', 831, 'CU9', 'ST75');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR49', '17/01/2018', '8:38 PM', 334, 'CU10', 'ST90');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR50', '16/08/2019', '6:45 PM', 247, 'CU5', 'ST66');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR51', '16/09/2018', '12:10 PM', 800, 'CU1', 'ST34');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR52', '04/01/2017', '3:27 PM', 544, 'CU5', 'ST38');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR53', '05/05/2021', '2:03 PM', 997, 'CU8', 'ST37');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR54', '26/04/2021', '3:23 PM', 417, 'CU6', 'ST79');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR55', '21/12/2016', '9:38 AM', 42, 'CU7', 'ST80');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR56', '12/10/2016', '10:52 AM', 610, 'CU2', 'ST52');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR57', '27/01/2020', '7:08 PM', 559, 'CU3', 'ST58');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR58', '21/02/2017', '12:23 PM', 852, 'CU10', 'ST98');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR59', '01/08/2016', '11:12 AM', 498, 'CU9', 'ST71');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR60', '30/10/2018', '8:56 PM', 61, 'CU4', 'ST85');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR61', '29/04/2017', '4:53 PM', 620, 'CU7', 'ST48');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR62', '05/01/2021', '5:48 PM', 212, 'CU10', 'ST3');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR63', '05/09/2016', '7:45 PM', 954, 'CU6', 'ST91');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR64', '02/05/2015', '10:15 AM', 853, 'CU2', 'ST59');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR65', '10/02/2018', '4:21 PM', 281, 'CU8', 'ST65');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR66', '19/03/2021', '12:15 PM', 397, 'CU3', 'ST97');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR67', '11/07/2019', '8:46 PM', 771, 'CU1', 'ST39');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR68', '15/12/2019', '8:11 PM', 698, 'CU4', 'ST12');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR69', '12/06/2020', '4:40 PM', 681, 'CU5', 'ST89');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR70', '26/07/2021', '11:05 AM', 483, 'CU9', 'ST20');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR71', '24/08/2018', '5:35 PM', 935, 'CU9', 'ST72');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR72', '15/12/2018', '2:42 PM', 265, 'CU10', 'ST22');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR73', '02/03/2020', '9:12 AM', 741, 'CU5', 'ST43');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR74', '01/09/2015', '12:33 PM', 120, 'CU2', 'ST49');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR75', '25/03/2016', '1:04 PM', 863, 'CU1', 'ST46');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR76', '05/10/2015', '9:13 AM', 104, 'CU7', 'ST19');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR77', '23/07/2016', '8:52 PM', 917, 'CU3', 'ST88');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR78', '28/08/2018', '8:39 PM', 72, 'CU6', 'ST57');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR79', '23/11/2017', '3:52 PM', 29, 'CU8', 'ST4');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR80', '24/12/2015', '9:18 AM', 439, 'CU4', 'ST100');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR81', '23/09/2021', '7:27 PM', 136, 'CU1', 'ST61');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR82', '26/08/2022', '9:43 AM', 317, 'CU10', 'ST93');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR83', '31/10/2017', '2:07 PM', 137, 'CU3', 'ST53');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR84', '08/08/2017', '4:15 PM', 62, 'CU9', 'ST70');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR85', '26/12/2018', '8:49 PM', 105, 'CU5', 'ST86');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR86', '03/04/2016', '1:05 PM', 181, 'CU4', 'ST56');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR87', '09/12/2021', '12:50 PM', 788, 'CU6', 'ST8');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR88', '29/12/2016', '7:59 PM', 677, 'CU2', 'ST83');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR89', '05/08/2017', '10:19 AM', 762, 'CU7', 'ST95');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR90', '06/05/2022', '4:54 PM', 541, 'CU8', 'ST10');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR91', '23/05/2016', '3:47 PM', 997, 'CU8', 'ST16');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR92', '27/10/2015', '6:43 PM', 89, 'CU2', 'ST11');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR93', '01/07/2022', '10:56 AM', 144, 'CU4', 'ST76');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR94', '18/01/2022', '4:36 PM', 24, 'CU5', 'ST44');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR95', '08/05/2016', '10:51 AM', 424, 'CU9', 'ST78');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR96', '25/04/2018', '5:14 PM', 524, 'CU7', 'ST94');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR97', '02/10/2016', '7:39 PM', 463, 'CU1', 'ST18');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR98', '19/11/2019', '12:38 PM', 624, 'CU3', 'ST84');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR99', '01/07/2017', '5:59 PM', 493, 'CU6', 'ST21');
+insert into Orders (OrderID, OrderDate, OrderTime, Grandtotal, CustID, StaffID) values ('OR100', '04/04/2022', '11:03 AM', 897, 'CU10', 'ST1');
+
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST100', 'SHF1', '08/01/2018', '9:48 AM', '9:02 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST69', 'SHF2', '06/04/2020', '6:16 PM', '11:25 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST75', 'SHF3', '17/07/2022', '8:53 PM', '5:50 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST19', 'SHF4', '04/02/2017', '4:27 PM', '6:21 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST81', 'SHF5', '21/04/2020', '4:58 PM', '7:14 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST70', 'SHF6', '10/09/2016', '1:42 PM', '5:45 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST28', 'SHF7', '28/11/2020', '12:53 PM', '7:19 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST21', 'SHF8', '23/02/2022', '8:29 PM', '5:37 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST46', 'SHF9', '07/06/2019', '11:40 AM', '12:25 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST30', 'SHF10', '15/01/2021', '7:24 PM', '8:02 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST27', 'SHF11', '22/12/2018', '1:49 PM', '10:18 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST17', 'SHF12', '24/03/2016', '4:24 PM', '3:41 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST33', 'SHF13', '02/10/2017', '12:04 PM', '5:54 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST83', 'SHF14', '06/04/2016', '6:28 PM', '2:48 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST91', 'SHF15', '16/01/2022', '5:36 PM', '1:12 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST5', 'SHF16', '14/07/2015', '9:13 AM', '9:48 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST45', 'SHF17', '22/02/2021', '8:48 PM', '6:43 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST15', 'SHF18', '15/04/2019', '5:34 PM', '1:15 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST18', 'SHF19', '12/05/2017', '5:45 PM', '4:44 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST38', 'SHF20', '01/07/2021', '4:58 PM', '5:25 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST6', 'SHF21', '03/06/2017', '6:08 PM', '12:20 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST64', 'SHF22', '11/07/2021', '7:21 PM', '8:06 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST79', 'SHF23', '28/03/2022', '7:01 PM', '6:38 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST36', 'SHF24', '19/01/2021', '1:53 PM', '8:16 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST80', 'SHF25', '12/08/2015', '5:22 PM', '4:50 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST54', 'SHF26', '01/10/2021', '4:37 PM', '2:20 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST95', 'SHF27', '02/04/2016', '9:54 AM', '8:38 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST72', 'SHF28', '15/02/2019', '2:31 PM', '4:43 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST92', 'SHF29', '19/03/2019', '3:08 PM', '8:37 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST49', 'SHF30', '29/04/2017', '3:31 PM', '5:55 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST85', 'SHF31', '06/03/2018', '4:20 PM', '10:05 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST51', 'SHF32', '14/11/2021', '4:19 PM', '3:23 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST87', 'SHF33', '18/01/2018', '5:20 PM', '1:49 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST63', 'SHF34', '26/04/2016', '12:28 PM', '7:58 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST52', 'SHF35', '05/12/2016', '2:26 PM', '12:39 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST44', 'SHF36', '08/07/2022', '10:09 AM', '11:39 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST86', 'SHF37', '24/02/2016', '9:36 AM', '10:18 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST50', 'SHF38', '14/10/2019', '11:51 AM', '1:05 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST47', 'SHF39', '20/07/2015', '8:42 PM', '5:53 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST3', 'SHF40', '03/10/2018', '7:33 PM', '5:33 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST55', 'SHF41', '18/06/2016', '4:55 PM', '6:47 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST78', 'SHF42', '15/11/2018', '3:35 PM', '3:10 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST56', 'SHF43', '16/10/2017', '6:43 PM', '5:34 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST90', 'SHF44', '01/10/2016', '10:03 AM', '12:15 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST32', 'SHF45', '14/02/2022', '2:42 PM', '1:30 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST43', 'SHF46', '15/04/2016', '10:36 AM', '2:02 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST20', 'SHF47', '30/11/2022', '3:36 PM', '3:34 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST39', 'SHF48', '18/01/2022', '4:53 PM', '11:47 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST68', 'SHF49', '29/01/2018', '7:03 PM', '10:56 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST67', 'SHF50', '29/09/2017', '5:27 PM', '8:17 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST34', 'SHF51', '28/01/2021', '11:39 AM', '9:18 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST74', 'SHF52', '18/10/2021', '12:00 PM', '8:15 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST93', 'SHF53', '03/02/2015', '12:58 PM', '1:30 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST65', 'SHF54', '02/05/2020', '2:13 PM', '1:25 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST48', 'SHF55', '26/01/2018', '9:03 AM', '2:06 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST23', 'SHF56', '20/12/2017', '5:08 PM', '1:57 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST77', 'SHF57', '20/03/2017', '3:24 PM', '7:42 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST96', 'SHF58', '30/04/2019', '2:02 PM', '6:46 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST58', 'SHF59', '26/01/2019', '1:44 PM', '2:09 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST37', 'SHF60', '02/09/2020', '2:59 PM', '1:40 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST1', 'SHF61', '08/11/2017', '8:39 PM', '6:36 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST57', 'SHF62', '05/11/2016', '11:50 AM', '12:03 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST88', 'SHF63', '28/04/2019', '12:25 PM', '8:32 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST71', 'SHF64', '03/08/2019', '2:18 PM', '8:39 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST66', 'SHF65', '30/10/2015', '8:50 PM', '9:02 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST41', 'SHF66', '24/05/2020', '4:59 PM', '10:29 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST22', 'SHF67', '14/10/2015', '11:18 AM', '8:07 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST9', 'SHF68', '16/07/2020', '4:20 PM', '1:58 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST40', 'SHF69', '26/01/2016', '3:26 PM', '1:00 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST24', 'SHF70', '30/06/2022', '4:52 PM', '7:32 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST59', 'SHF71', '20/11/2016', '8:13 PM', '8:51 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST29', 'SHF72', '01/04/2019', '9:46 AM', '9:09 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST76', 'SHF73', '17/06/2017', '12:32 PM', '2:54 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST31', 'SHF74', '27/04/2019', '3:58 PM', '4:10 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST10', 'SHF75', '25/08/2019', '2:28 PM', '9:07 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST4', 'SHF76', '11/03/2022', '2:03 PM', '2:37 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST35', 'SHF77', '21/12/2019', '3:40 PM', '4:08 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST89', 'SHF78', '22/02/2022', '10:40 AM', '5:04 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST62', 'SHF79', '28/01/2015', '1:34 PM', '9:03 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST11', 'SHF80', '02/03/2022', '10:24 AM', '11:18 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST61', 'SHF81', '20/03/2015', '1:04 PM', '2:35 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST60', 'SHF82', '09/12/2017', '1:02 PM', '6:12 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST53', 'SHF83', '11/08/2018', '3:15 PM', '3:21 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST7', 'SHF84', '19/06/2021', '8:25 PM', '10:14 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST25', 'SHF85', '25/03/2021', '4:11 PM', '4:04 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST8', 'SHF86', '07/04/2020', '9:12 AM', '12:17 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST82', 'SHF87', '18/02/2016', '8:15 PM', '4:53 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST73', 'SHF88', '17/08/2022', '5:37 PM', '3:45 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST16', 'SHF89', '31/05/2019', '6:31 PM', '12:49 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST12', 'SHF90', '27/03/2016', '2:03 PM', '10:57 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST94', 'SHF91', '29/10/2016', '1:17 PM', '12:49 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST97', 'SHF92', '05/08/2019', '4:41 PM', '7:37 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST98', 'SHF93', '02/11/2017', '2:48 PM', '9:37 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST26', 'SHF94', '15/05/2022', '9:06 AM', '7:43 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST14', 'SHF95', '30/05/2017', '12:14 PM', '9:47 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST42', 'SHF96', '06/04/2022', '10:00 AM', '11:31 AM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST84', 'SHF97', '28/10/2018', '2:54 PM', '3:37 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST99', 'SHF98', '22/06/2020', '2:10 PM', '1:18 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST18', 'SHF99', '14/05/2020', '8:17 PM', '7:54 PM');
+insert into ShiftAllocation (StaffID, ShiftID, DutyDate, StartTime, EndTime) values ('ST85', 'SHF100', '11/05/2016', '10:43 AM', '3:11 PM');
+
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR5', 'P2', 7, 167, 253);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR64', 'P6', 3, 187, 473);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR43', 'P9', 7, 141, 649);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR20', 'P5', 10, 84, 794);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR54', 'P2', 4, 274, 240);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR95', 'P3', 3, 183, 641);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR28', 'P7', 8, 207, 183);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR8', 'P10', 9, 158, 187);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR33', 'P8', 9, 211, 270);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR3', 'P4', 2, 154, 172);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR60', 'P8', 2, 135, 921);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR84', 'P5', 2, 252, 576);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR76', 'P2', 8, 152, 628);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR47', 'P3', 11, 91, 216);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR67', 'P6', 4, 18, 651);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR69', 'P4', 15, 213, 251);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR46', 'P1', 15, 142, 407);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR11', 'P9', 8, 299, 494);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR89', 'P8', 2, 105, 287);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR27', 'P10', 13, 55, 352);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR39', 'P5', 3, 184, 107);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR36', 'P4', 12, 25, 394);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR23', 'P9', 12, 83, 791);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR21', 'P8', 6, 84, 301);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR81', 'P1', 8, 98, 957);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR59', 'P6', 10, 142, 601);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR31', 'P2', 13, 98, 374);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR50', 'P3', 12, 125, 891);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR80', 'P8', 9, 110, 702);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR17', 'P7', 4, 250, 597);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR71', 'P6', 13, 9, 51);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR77', 'P10', 5, 128, 525);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR61', 'P8', 12, 46, 193);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR93', 'P5', 13, 126, 363);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR34', 'P7', 4, 140, 372);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR26', 'P2', 8, 179, 589);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR1', 'P3', 10, 101, 58);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR30', 'P9', 11, 189, 625);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR29', 'P4', 13, 127, 388);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR7', 'P1', 4, 32, 293);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR44', 'P2', 14, 34, 140);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR72', 'P5', 14, 133, 612);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR58', 'P6', 14, 32, 751);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR10', 'P4', 11, 33, 247);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR98', 'P8', 7, 226, 242);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR74', 'P9', 10, 261, 184);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR92', 'P1', 3, 170, 590);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR42', 'P9', 3, 210, 626);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR12', 'P7', 5, 225, 368);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR65', 'P3', 15, 229, 58);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR48', 'P6', 10, 122, 368);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR88', 'P8', 15, 127, 166);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR68', 'P8', 13, 90, 763);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR87', 'P2', 4, 97, 739);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR90', 'P1', 12, 106, 489);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR25', 'P2', 6, 94, 855);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR14', 'P7', 9, 286, 160);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR16', 'P10', 6, 254, 324);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR4', 'P5', 12, 261, 538);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR40', 'P4', 1, 299, 569);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR18', 'P4', 10, 222, 871);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR38', 'P2', 2, 251, 802);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR96', 'P5', 2, 39, 647);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR9', 'P6', 10, 194, 141);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR94', 'P3', 6, 227, 12);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR100', 'P1', 7, 13, 994);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR82', 'P9', 9, 238, 243);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR51', 'P8', 2, 236, 372);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR32', 'P7', 11, 169, 560);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR83', 'P10', 14, 279, 98);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR52', 'P4', 10, 63, 968);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR24', 'P2', 13, 10, 312);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR70', 'P7', 2, 89, 77);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR53', 'P10', 1, 166, 661);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR19', 'P1', 3, 160, 181);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR22', 'P7', 8, 108, 238);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR99', 'P5', 12, 193, 188);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR15', 'P9', 14, 64, 196);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR62', 'P3', 12, 79, 787);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR57', 'P7', 14, 82, 65);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR2', 'P8', 6, 281, 535);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR6', 'P6', 4, 20, 176);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR78', 'P1', 14, 9, 463);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR91', 'P7', 12, 184, 44);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR97', 'P4', 3, 274, 53);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR73', 'P9', 14, 77, 394);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR49', 'P2', 2, 145, 796);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR37', 'P5', 13, 108, 766);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR85', 'P3', 12, 4, 42);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR79', 'P10', 3, 33, 113);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR45', 'P10', 6, 104, 270);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR41', 'P6', 6, 62, 826);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR35', 'P8', 2, 254, 73);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR13', 'P5', 15, 66, 170);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR55', 'P7', 13, 145, 731);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR56', 'P1', 6, 247, 923);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR66', 'P2', 13, 23, 698);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR75', 'P4', 10, 141, 91);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR86', 'P9', 15, 254, 687);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR18', 'P3', 12, 17, 585);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR31', 'P3', 9, 12, 896);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR26', 'P9', 1, 10, 511);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR29', 'P1', 11, 14, 534);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR70', 'P6', 6, 27, 246);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR48', 'P8', 5, 94, 198);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR84', 'P2', 6, 292, 419);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR57', 'P5', 9, 124, 198);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR89', 'P7', 3, 91, 461);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR85', 'P4', 9, 53, 99);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR67', 'P10', 14, 89, 463);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR76', 'P10', 8, 180, 317);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR97', 'P5', 8, 19, 759);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR14', 'P4', 4, 285, 563);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR7', 'P6', 13, 234, 264);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR74', 'P7', 3, 184, 537);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR37', 'P1', 1, 204, 526);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR35', 'P3', 8, 127, 701);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR13', 'P2', 9, 274, 315);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR56', 'P8', 5, 226, 348);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR80', 'P9', 12, 103, 400);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR79', 'P2', 14, 49, 468);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR78', 'P8', 3, 266, 56);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR53', 'P1', 9, 203, 451);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR44', 'P6', 11, 87, 372);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR16', 'P9', 14, 248, 765);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR63', 'P3', 6, 46, 302);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR51', 'P5', 10, 243, 731);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR50', 'P7', 6, 15, 408);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR45', 'P4', 15, 234, 354);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR55', 'P1', 1, 297, 404);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR100', 'P4', 11, 230, 216);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR38', 'P10', 3, 157, 354);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR96', 'P1', 3, 118, 543);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR87', 'P3', 8, 22, 80);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR40', 'P8', 6, 37, 984);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR17', 'P9', 4, 92, 616);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR42', 'P7', 1, 65, 959);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR73', 'P6', 15, 86, 312);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR75', 'P5', 11, 59, 120);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR41', 'P2', 9, 88, 358);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR5', 'P10', 13, 98, 979);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR64', 'P8', 7, 45, 132);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR54', 'P1', 6, 244, 148);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR36', 'P9', 3, 114, 279);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR62', 'P5', 11, 134, 364);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR93', 'P7', 13, 79, 372);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR65', 'P2', 11, 12, 261);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR15', 'P3', 3, 95, 788);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR77', 'P4', 10, 75, 141);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR19', 'P6', 2, 277, 378);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR86', 'P4', 2, 159, 596);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR9', 'P3', 8, 74, 550);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR72', 'P9', 3, 182, 228);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR92', 'P8', 12, 142, 552);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR82', 'P1', 3, 141, 350);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR22', 'P10', 10, 124, 222);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR49', 'P6', 6, 34, 417);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR2', 'P6', 8, 68, 754);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR61', 'P7', 10, 233, 323);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR39', 'P2', 12, 96, 180);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR32', 'P2', 13, 127, 471);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR60', 'P3', 2, 210, 430);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR24', 'P8', 10, 186, 673);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR94', 'P7', 2, 100, 667);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR95', 'P4', 7, 187, 542);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR12', 'P5', 2, 110, 220);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR46', 'P9', 10, 238, 286);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR52', 'P1', 8, 186, 848);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR34', 'P5', 10, 107, 39);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR30', 'P10', 2, 57, 648);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR25', 'P10', 11, 101, 926);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR98', 'P2', 2, 210, 196);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR81', 'P4', 15, 77, 264);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR71', 'P3', 8, 16, 873);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR10', 'P6', 3, 130, 471);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR58', 'P5', 7, 109, 263);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR99', 'P9', 10, 137, 68);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR1', 'P8', 7, 85, 589);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR4', 'P1', 10, 113, 488);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR21', 'P7', 13, 236, 460);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR66', 'P10', 10, 199, 761);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR28', 'P5', 14, 126, 721);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR47', 'P1', 4, 245, 82);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR69', 'P9', 5, 88, 515);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR43', 'P2', 9, 255, 917);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR6', 'P8', 14, 188, 480);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR20', 'P3', 9, 250, 482);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR88', 'P6', 3, 246, 75);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR8', 'P5', 4, 17, 878);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR27', 'P7', 10, 94, 904);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR68', 'P1', 13, 223, 874);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR83', 'P7', 14, 13, 852);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR59', 'P3', 7, 264, 10);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR3', 'P9', 15, 55, 649);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR90', 'P10', 14, 93, 711);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR23', 'P2', 4, 258, 451);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR91', 'P8', 14, 177, 706);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR33', 'P4', 8, 69, 27);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR15', 'P5', 9, 60, 528);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR34', 'P6', 12, 298, 536);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR92', 'P4', 5, 108, 590);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR36', 'P2', 12, 241, 334);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR3', 'P8', 10, 195, 394);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR13', 'P6', 15, 17, 646);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR76', 'P3', 6, 292, 771);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR30', 'P7', 8, 67, 36);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR33', 'P1', 7, 233, 555);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR74', 'P10', 3, 125, 321);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR20', 'P6', 4, 228, 709);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR77', 'P9', 4, 118, 72);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR6', 'P7', 4, 187, 27);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR87', 'P1', 8, 230, 453);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR91', 'P5', 6, 194, 243);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR19', 'P9', 10, 248, 304);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR81', 'P3', 13, 118, 77);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR46', 'P10', 12, 142, 269);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR57', 'P6', 3, 139, 655);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR50', 'P2', 10, 220, 283);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR93', 'P8', 5, 235, 916);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR1', 'P4', 13, 267, 238);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR96', 'P6', 9, 10, 348);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR99', 'P8', 5, 27, 611);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR80', 'P10', 2, 264, 748);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR75', 'P7', 13, 275, 71);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR82', 'P4', 2, 211, 354);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR47', 'P5', 6, 74, 730);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR7', 'P2', 9, 140, 749);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR84', 'P3', 9, 124, 185);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR27', 'P9', 3, 216, 776);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR14', 'P2', 4, 152, 848);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR9', 'P4', 13, 43, 194);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR11', 'P5', 11, 164, 947);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR22', 'P8', 9, 71, 437);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR5', 'P3', 1, 193, 63);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR69', 'P7', 12, 105, 467);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR37', 'P6', 6, 11, 493);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR43', 'P1', 4, 42, 755);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR72', 'P10', 10, 60, 134);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR17', 'P2', 15, 295, 795);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR68', 'P9', 5, 174, 575);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR100', 'P5', 14, 111, 817);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR40', 'P7', 2, 41, 249);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR51', 'P6', 2, 39, 856);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR28', 'P4', 14, 237, 939);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR29', 'P10', 15, 223, 30);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR63', 'P7', 4, 217, 823);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR56', 'P3', 15, 252, 918);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR23', 'P1', 14, 112, 748);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR79', 'P9', 4, 199, 382);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR65', 'P1', 1, 99, 695);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR61', 'P10', 8, 212, 251);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR85', 'P9', 2, 173, 810);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR25', 'P4', 4, 269, 971);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR52', 'P8', 7, 58, 919);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR64', 'P5', 7, 63, 210);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR31', 'P7', 7, 12, 729);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR95', 'P1', 7, 104, 405);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR78', 'P6', 10, 49, 730);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR60', 'P2', 5, 120, 361);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR58', 'P3', 2, 44, 142);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR4', 'P8', 8, 23, 227);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR38', 'P4', 7, 66, 197);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR8', 'P7', 10, 91, 486);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR10', 'P9', 9, 149, 630);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR62', 'P1', 13, 267, 114);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR53', 'P2', 7, 10, 453);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR35', 'P5', 15, 143, 366);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR66', 'P6', 6, 217, 579);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR12', 'P10', 9, 158, 471);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR24', 'P3', 11, 115, 445);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR48', 'P1', 5, 45, 457);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR86', 'P5', 4, 186, 135);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR55', 'P5', 15, 264, 948);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR98', 'P6', 15, 208, 505);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR44', 'P3', 8, 173, 176);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR94', 'P8', 5, 113, 513);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR16', 'P3', 1, 100, 159);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR18', 'P2', 8, 7, 797);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR45', 'P9', 8, 245, 577);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR97', 'P8', 10, 293, 42);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR42', 'P4', 3, 90, 310);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR32', 'P1', 5, 221, 164);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR90', 'P6', 6, 185, 764);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR2', 'P3', 11, 159, 43);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR39', 'P9', 13, 161, 540);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR26', 'P8', 14, 55, 544);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR59', 'P2', 4, 28, 41);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR54', 'P7', 15, 255, 480);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR21', 'P10', 3, 116, 626);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR73', 'P5', 2, 150, 887);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR88', 'P5', 4, 202, 504);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR41', 'P3', 4, 99, 521);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR70', 'P4', 10, 212, 207);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR83', 'P5', 10, 181, 676);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR49', 'P5', 15, 218, 172);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR95', 'P7', 14, 174, 521);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR37', 'P2', 3, 92, 227);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR42', 'P10', 15, 219, 709);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR27', 'P1', 2, 207, 878);
+insert into OrderDetails (OrderID, ProductID, Qty, SellingPrice, Subtotal) values ('OR25', 'P8', 8, 58, 662);
+
+
+COMMIT;
+
+SELECT COUNT(*) AS NoOfSupplier FROM Supplier;
+SELECT COUNT(*) AS NoOfBranch FROM Branch;
+SELECT COUNT(*) AS NoOfProduct FROM Product;
+SELECT COUNT(*) AS NoOfCustomer FROM Customer;
+SELECT COUNT(*) AS NoOfMember FROM Member;
+SELECT COUNT(*) AS NoOfMember FROM Member;
+SELECT COUNT(*) AS NoOfStaff FROM Staff;
+SELECT COUNT(*) AS NoOfOrder FROM Orders;
+SELECT COUNT(*) AS NoOfShiftAllocation FROM ShiftAllocation;
+SELECT COUNT(*) AS NoOfSupply FROM Supply;
+SELECT COUNT(*) AS NoOfOrderDetail FROM OrderDetails;
